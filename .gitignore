@@ -1,0 +1,53 @@
+# ==============================================================================
+# Git Ignore for Task Matrix (Nuxt 3 + Laravel 11 Fullstack)
+# ==============================================================================
+
+# --- Node & Nuxt 3 (Frontend) ---
+**/node_modules/
+**/.nuxt/
+**/.output/
+**/.nitro/
+**/dist/
+**/.data/
+**/.cache/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# --- PHP & Laravel 11 (Backend) ---
+**/vendor/
+backend/.env
+backend/.env.backup
+backend/.env.production
+backend/storage/*.key
+backend/storage/framework/cache/data/*
+!backend/storage/framework/cache/data/.gitignore
+backend/storage/framework/sessions/*
+!backend/storage/framework/sessions/.gitignore
+backend/storage/framework/views/*
+!backend/storage/framework/views/.gitignore
+backend/storage/logs/*
+!backend/storage/logs/.gitignore
+backend/bootstrap/cache/*
+!backend/bootstrap/cache/.gitignore
+.phpunit.result.cache
+
+# --- OS & Editor artifacts ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.bak
+*.tmp
+*.log
+
+# --- Docker & DB Volumes (if mounted locally) ---
+*.sql
+*.sqlite
