@@ -27,23 +27,23 @@
 flowchart TD
     subgraph Team[🏢 チームプロジェクト管理]
         Methodology{開発手法の選択}
-        Agile[🏃‍♂️ アジャイル / スクラム<br/>・スプリント管理<br/>・ストーリーポイント (pt)<br/>・カンバン: ToDo / 進行中 / レビュー / 完了]
-        Waterfall[📊 ウォーターフォール<br/>・WBS 5工程: 要件定義/設計/開発/テスト/リリース<br/>・進捗率バー (%)<br/>・担当者アサイン]
+        Agile["🏃‍♂️ アジャイル / スクラム<br/>・スプリント管理<br/>・ストーリーポイント pt<br/>・カンバン: ToDo / 進行中 / レビュー / 完了"]
+        Waterfall["📊 ウォーターフォール<br/>・WBS 5工程: 要件定義/設計/開発/テスト/リリース<br/>・進捗率バー %<br/>・担当者アサイン"]
         Methodology -->|切り替え| Agile
         Methodology -->|切り替え| Waterfall
     end
 
     subgraph Branch[⚡ ブレークダウン]
-        Action[チームタスクの「⚡ 取り込む」をクリック<br/>・優先度（第1〜第4象限）を選択<br/>・個人用の締切を設定]
+        Action["チームタスクの「⚡ 取り込む」をクリック<br/>・優先度（第1〜第4象限）を選択<br/>・個人用の締切を設定"]
         Agile --> Action
         Waterfall --> Action
     end
 
     subgraph Personal[👤 個人の4象限マトリクス]
-        Q1[第1象限: 緊急 × 重要<br/>すぐやる (DO)]
-        Q2[第2象限: 非緊急 × 重要<br/>計画する (PLAN)]
-        Q3[第3象限: 緊急 × 非重要<br/>委託する (DELEGATE)]
-        Q4[第4象限: 非緊急 × 非重要<br/>削減する (ELIMINATE)]
+        Q1["第1象限: 緊急 × 重要<br/>すぐやる (DO)"]
+        Q2["第2象限: 非緊急 × 重要<br/>計画する (PLAN)"]
+        Q3["第3象限: 緊急 × 非重要<br/>委託する (DELEGATE)"]
+        Q4["第4象限: 非緊急 × 非重要<br/>削減する (ELIMINATE)"]
         Action --> Q1
         Action --> Q2
         Action --> Q3
