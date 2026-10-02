@@ -11,6 +11,8 @@ export type WaterfallPhase = 'requirement' | 'design' | 'development' | 'testing
 
 export interface Task {
   id: number;
+  project_id: number | null;
+  project_name?: string | null;
   task_scope: TaskScope;
   methodology: Methodology;
   team_task_id: number | null;
@@ -33,6 +35,7 @@ export interface Task {
 }
 
 export interface CreateTaskPayload {
+  project_id?: number | null;
   task_scope?: TaskScope;
   methodology?: Methodology;
   team_task_id?: number | null;
@@ -51,6 +54,7 @@ export interface CreateTaskPayload {
 }
 
 export interface UpdateTaskPayload {
+  project_id?: number | null;
   task_scope?: TaskScope;
   methodology?: Methodology;
   team_task_id?: number | null;
