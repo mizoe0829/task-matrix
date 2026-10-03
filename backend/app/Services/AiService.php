@@ -261,7 +261,8 @@ class AiService
 
     protected function mockTriage(string $title, ?string $description, ?string $dueDate, ?string $scope): array
     {
-        $lowerTitle = mb_strtolower($title);
+        // タイトルと詳細メモを合算して解析対象にする
+        $targetText = mb_strtolower($title . ' ' . ($description ?? ''));
         $urgency = 2;
         $importance = 3;
         $priorityType = 'not_urgent_important';
@@ -282,59 +283,60 @@ class AiService
         }
 
         // キーワード解析
-        if (preg_match('/(緊急|障害|至急|バグ|トラブル|炎上|fix|bug|urgent|すぐ)/u', $lowerTitle)) {
-            $urgency = 5;
+        // 第1象限 (DO): 緊急・重要（インシデント、本番障害、重大バグ、至急対応など）
+        if (preg_match('/(インシデント|本番|障害|至急|緊急|バグ|トラブル|炎上|エラー|ダウン|落ちた|停止|事故|クレーム|脆弱性|漏洩|即時|fix|bug|incident|critical|down|urgent|error)/u', $targetText)) {
+            $urgency = max(4, $urgency);
             $importance = 5;
             $priorityType = 'urgent_important';
             $priorityLabel = 'DO';
             $estimatedMinutes = 30;
-            $reason = "タスク名に含まれる「緊急・障害」キーワードおよび対応の重要度に基づき、最優先で実行すべき第1象限（DO）と判定しました。";
-            $advice = "他の予定を一旦ブロックし、原因特定と暫定対応を最優先で着手してください。";
-        } elseif (preg_match('/(設計|リファクタ|学習|アーキテクチャ|中長期|ロードマップ|改善|ドキュメント|自動化|テスト)/u', $lowerTitle)) {
-            $importance = 5;
-            $urgency = min($urgency, 2);
-            $priorityType = 'not_urgent_important';
-            $priorityLabel = 'PLAN';
-            $estimatedMinutes = 60;
-            $reason = "将来の技術的負債解消や組織・スキルの成長に直結する高価値タスクのため、第2象限（PLAN）に分類しました。";
-            $advice = "突発的な作業に時間を奪われる前に、カレンダー上に専用の集中時間を確保（タイムブロッキング）して着実に進めましょう。";
-        } elseif (preg_match('/(議事録|返信|連絡|調整|申請|リマインド|経費)/u', $lowerTitle)) {
-            $urgency = max($urgency, 4);
+            $reason = "「{$title}」に含まれる本番・インシデント・緊急キーワードに基づき、業務への影響度が極めて高い第1象限（DO / すぐやる）と判定しました。";
+            $advice = "他の予定を中断し、影響範囲の特定と暫定対応を最優先で着手してください。";
+        }
+        // 第3象限 (DELEGATE): 緊急・非重要（雑務、定例連絡、調整、申請、返信など）
+        elseif (preg_match('/(議事録|返信|メール|連絡|調整|申請|リマインド|経費|手配|買い出し|案内|共有|依頼|問い合わせ)/u', $targetText)) {
+            $urgency = max(4, $urgency);
             $importance = 2;
             $priorityType = 'urgent_not_important';
             $priorityLabel = 'DELEGATE';
             $estimatedMinutes = 15;
-            $reason = "迅速な対応が求められる一方、コア業務の直接的成果ではないため、第3象限（DELEGATE）と判定しました。";
-            $advice = "テンプレートの活用や他者への委任、またはスキマ時間（ポモドーロの合間など）にまとめて一括処理するのが効果的です。";
-        } elseif (preg_match('/(調査|雑談|片付け|閲覧|確認)/u', $lowerTitle) && $urgency < 3) {
+            $reason = "迅速な対応が求められる一方、コア業務の直接成果ではないため、第3象限（DELEGATE / 委任・迅速処理）と判定しました。";
+            $advice = "テンプレートの活用や他者への委任、またはスキマ時間にまとめて一括処理するのが効果的です。";
+        }
+        // 第4象限 (ELIMINATE): 非緊急・非重要（時間の浪費、整理、漠然とした閲覧など）
+        elseif (preg_match('/(雑談|片付け|掃除|閲覧|後回し|保留|暇つぶし|なんとなく|不要)/u', $targetText)) {
             $urgency = 1;
             $importance = 1;
             $priorityType = 'not_urgent_not_important';
             $priorityLabel = 'ELIMINATE';
             $estimatedMinutes = 15;
-            $reason = "緊急度・重要度ともに現時点では低く、他の重要タスクを圧迫するリスクがあるため第4象限（ELIMINATE）と判定しました。";
+            $reason = "緊急度・重要度ともに現時点では低く、重要なタスクを圧迫するリスクがあるため第4象限（ELIMINATE / 削減・保留）と判定しました。";
             $advice = "本当に今やるべきか再検討し、不要であればタスクから削除または保留リストに移すことを推奨します。";
-        } else {
-            // デフォルト判定
+        }
+        // 第2象限 (PLAN): 非緊急・重要（中長期設計、リファクタ、学習、仕組み化など）
+        elseif (preg_match('/(設計|リファクタ|学習|勉強|アーキテクチャ|中長期|ロードマップ|改善|ドキュメント|自動化|テスト|ci\/cd|レビュー|戦略|新規)/u', $targetText)) {
+            $importance = 5;
+            $urgency = min($urgency, 2);
+            $priorityType = 'not_urgent_important';
+            $priorityLabel = 'PLAN';
+            $estimatedMinutes = 60;
+            $reason = "将来の技術的負債解消や組織・スキルの成長に直結する高価値タスクのため、第2象限（PLAN / 計画する）に分類しました。";
+            $advice = "突発的な作業に時間を奪われる前に、カレンダー上に専用の集中時間を確保（タイムブロッキング）して着実に進めましょう。";
+        }
+        // デフォルト判定 (期日や文字数から推論)
+        else {
             if ($urgency >= 4) {
-                if ($importance >= 4) {
-                    $priorityType = 'urgent_important';
-                    $priorityLabel = 'DO';
-                } else {
-                    $priorityType = 'urgent_not_important';
-                    $priorityLabel = 'DELEGATE';
-                }
+                $priorityType = 'urgent_important';
+                $priorityLabel = 'DO';
+                $reason = "期日が迫っているため、最優先で実行すべき第1象限（DO）と判定しました。";
+                $advice = "締切に遅れないよう、着手を急いでください。";
             } else {
-                if ($importance >= 3) {
-                    $priorityType = 'not_urgent_important';
-                    $priorityLabel = 'PLAN';
-                } else {
-                    $priorityType = 'not_urgent_not_important';
-                    $priorityLabel = 'ELIMINATE';
-                }
+                // 一般的な作業
+                $priorityType = 'not_urgent_important';
+                $priorityLabel = 'PLAN';
+                $reason = "タスク内容と期日のバランスを総合的に評価し、第2象限（PLAN）として最適化しました。";
+                $advice = "作業を細分化し、まずは最初の小さな1歩（15分）に集中して着手することをおすすめします。";
             }
-            $reason = "タスク内容と期日のバランスを総合的に評価し、第" . ($priorityLabel === 'DO' ? '1' : ($priorityLabel === 'PLAN' ? '2' : ($priorityLabel === 'DELEGATE' ? '3' : '4'))) . "象限として最適化しました。";
-            $advice = "作業を細分化し、まずは最初の小さな1歩（15分）に集中して着手することをおすすめします。";
         }
 
         return [
