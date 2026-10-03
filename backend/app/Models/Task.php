@@ -17,6 +17,7 @@ class Task extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'project_id',
         'task_scope',
         'methodology',
         'team_task_id',
@@ -92,6 +93,14 @@ class Task extends Model
     public const PHASE_DEVELOPMENT = 'development';
     public const PHASE_TESTING = 'testing';
     public const PHASE_RELEASE = 'release';
+
+    /**
+     * Relationship: The project this task belongs to
+     */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
 
     /**
      * Relationship: The parent team task (if this is a personal task derived from team task)

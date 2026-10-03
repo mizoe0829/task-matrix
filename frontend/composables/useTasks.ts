@@ -55,13 +55,17 @@ export const useTasks = () => {
     };
   });
 
-  // Fetch all tasks
-  const fetchTasks = async (scope?: TaskScope) => {
+  // Fetch tasks with optional scope and projectId
+  const fetchTasks = async (scope?: TaskScope, projectId?: number | null) => {
     isLoading.value = true;
     error.value = null;
     try {
-      const url = scope ? `${apiBase}/tasks?task_scope=${scope}` : `${apiBase}/tasks`;
-      const response = await $fetch<{ data: Task[] }>(url, {
+      const params = new URLSearchParams();
+      if (scope) params.append('task_scope', scope);
+      if (projectId) params.append('project_id', String(projectId));
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+
+      const response = await $fetch<{ data: Task[] }>(`${apiBase}/tasks${queryString}`, {
         headers: { Accept: 'application/json' },
       });
       tasks.value = response.data;

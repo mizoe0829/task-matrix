@@ -18,7 +18,11 @@ class TaskController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        $query = Task::with('teamTask');
+        $query = Task::with(['teamTask', 'project']);
+
+        if ($request->filled('project_id')) {
+            $query->where('project_id', $request->query('project_id'));
+        }
 
         if ($request->filled('task_scope')) {
             $query->where('task_scope', $request->query('task_scope'));
@@ -74,7 +78,7 @@ class TaskController extends Controller
         }
 
         $task = Task::create($validated);
-        $task->load('teamTask');
+        $task->load(['teamTask', 'project']);
 
         return (new TaskResource($task))
             ->response()
@@ -86,7 +90,7 @@ class TaskController extends Controller
      */
     public function show(Task $task): TaskResource
     {
-        $task->load('teamTask');
+        $task->load(['teamTask', 'project']);
         return new TaskResource($task);
     }
 
@@ -104,7 +108,7 @@ class TaskController extends Controller
         }
 
         $task->update($validated);
-        $task->load('teamTask');
+        $task->load(['teamTask', 'project']);
 
         return new TaskResource($task);
     }
@@ -133,6 +137,7 @@ class TaskController extends Controller
         ]);
 
         $personalTask = Task::create([
+            'project_id' => $task->project_id,
             'task_scope' => Task::SCOPE_PERSONAL,
             'methodology' => Task::METHODOLOGY_MATRIX,
             'team_task_id' => $task->id,
@@ -145,7 +150,7 @@ class TaskController extends Controller
             'is_completed' => false,
         ]);
 
-        $personalTask->load('teamTask');
+        $personalTask->load(['teamTask', 'project']);
 
         return (new TaskResource($personalTask))
             ->response()

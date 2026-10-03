@@ -26,6 +26,7 @@ class TaskRequest extends FormRequest
         $isPost = $this->isMethod('post');
 
         return [
+            'project_id' => ['nullable', 'exists:projects,id'],
             'task_scope' => ['sometimes', Rule::in(['team', 'personal'])],
             'methodology' => ['sometimes', Rule::in(['agile', 'waterfall', 'matrix'])],
             'team_task_id' => ['nullable', 'exists:tasks,id'],
