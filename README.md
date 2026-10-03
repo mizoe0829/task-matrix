@@ -1,8 +1,8 @@
-# プロジェクト＆4象限タスクマネージャー (Task Matrix)
+# プロジェクト＆4象限タスクマネージャー (Task Matrix) with AI
 
-アイゼンハワーマトリクス（緊急度 × 重要度）と、**プロジェクト管理・チーム開発手法（アジャイル / ウォーターフォール）の切り替え機能**を統合したモダンなフルスタックタスク管理アプリケーションです。  
+アイゼンハワーマトリクス（緊急度 × 重要度）と、**プロジェクト管理・チーム開発手法（アジャイル / ウォーターフォール）の切り替え機能**、そして **Google Gemini AI による意思決定支援（優先度自動判定・タスク自動分解・生産性コーチング）** を統合したモダンなフルスタックタスク管理アプリケーションです。  
 
-**「全体ダッシュボード ➔ プロジェクトダッシュボード ➔ チームタスク ➔ 個人の4象限マトリクス」** という直感的な階層構造により、会社・組織全体のプロジェクト推進から日々の個人の優先順位実行までを一元管理できます。
+**「全体ダッシュボード ➔ プロジェクトダッシュボード ➔ チームタスク ➔ 個人の4象限マトリクス」** という直感的な階層構造に、**AI アシスタント** が組み合わさることで、日々のタスク優先順位の迷いを解消し、最も価値の高い「第2象限（中長期の重要課題）」への投資を最大化します。
 
 ---
 
@@ -11,10 +11,11 @@
 | 分野 | 技術 | バージョン / 用途 |
 | :--- | :--- | :--- |
 | **フロントエンド** | **Nuxt 3** / **Vue 3** | SPA / SSR, TypeScript, Composition API |
-| **スタイリング** | **Tailwind CSS** | ダークモード基調のモダン UI（ダッシュボード / カンバン / WBS / 2×2マトリクス） |
-| **フロントエンドテスト** | **Vitest** + **@vue/test-utils** | Composable 単体テスト・状態管理テスト（全9テストPASS） |
+| **スタイリング** | **Tailwind CSS** | ダークモード基調のモダン UI（ダッシュボード / カンバン / WBS / 2×2マトリクス / AIポップアップ） |
+| **フロントエンドテスト** | **Vitest** + **@vue/test-utils** | Composable 単体テスト・状態管理テスト（全13テストPASS） |
 | **バックエンド API** | **Laravel 11** | PHP 8.3, RESTful API, Eloquent ORM |
-| **バックエンドテスト** | **PHPUnit** / **Pest** | API Feature テスト（CRUD / フィルタリング / ブランチ） |
+| **AI / LLM 統合** | **Google Gemini API** | `gemini-3.5-flash` / Structured Outputs (JSON Schema) / インテリジェント・スマートモック内蔵 |
+| **バックエンドテスト** | **PHPUnit** / **Pest** | API Feature テスト（全12テスト・104アサーションPASS） |
 | **Web サーバー** | **Nginx** | リバースプロキシ (`:8080` 公開) |
 | **データベース** | **MySQL 8.0** | データ永続化 (JST `+09:00` 設定済) |
 | **インフラ** | **Docker** / **Docker Compose** | サーバーサイド完全コンテナ化 |
@@ -112,6 +113,19 @@ flowchart TD
 - **チーム由来タスクの可視化**: チームから取り込んだタスクには `🏢 チーム由来: ○○` バッジが付き、元のチームタスクとの連動関係を維持。
 - **内容編集モーダル**: タイトル、詳細メモ、象限、締切（JST日本時間）のインライン編集・解除に対応。
 
+### 5. 🧠 AI インテリジェンス機能 (Google Gemini 連携)
+- **✨ AI トリアージ (優先度自動判定)**:
+  - タスク名・詳細・期日から、AI が「緊急度(1-5)」「重要度(1-5)」「推奨象限 (DO / PLAN / DELEGATE / ELIMINATE)」および「想定所要時間」を論理的根拠とともに自動判定。
+  - ワンクリックで推奨象限と所要時間をタスクに反映可能。
+- **⚡ AI タスク自動分解 (Smart Breakdown)**:
+  - チームタスクを個人タスクに取り込む際、抽象的な大きなタスクを 15〜60 分単位の具体的なサブタスク（3〜5件）に自動分解。
+  - 分解された複数サブタスクをプレビュー確認し、一括で個人4象限タスクとして取り込み可能。
+- **📊 AI 生産性コーチング (マトリクス健全度診断)**:
+  - 現在のタスク配分比率（第1〜第4象限）を分析し、**100点満点の「マトリクス健全度スコア」**、分析インサイト、具体的推奨アクションを提示。
+  - 「緊急対応（第1象限）ばかりに追われていないか」「中長期の価値創出（第2象限）に時間を割けているか」を客観的にアドバイス。
+- **🛡️ インテリジェント・フォールバック (スマートモック内蔵)**:
+  - Gemini API キーが未設定のローカル/オフライン環境でも、キーワード・期日解析ロジックによるモック推論が自動稼働し、開発やテストを一切ブロックしません。
+
 ---
 
 ## 📁 ディレクトリ構成
@@ -130,7 +144,7 @@ task-matrix/
 │   └── php/
 │       └── Dockerfile                 # PHP 8.3-fpm + 拡張モジュール
 ├── backend/                           # Laravel 11 API
-│   ├── .env.example
+│   ├── .env.example                   # 環境変数テンプレート (GEMINI_API_KEY等)
 │   ├── artisan
 │   ├── composer.json / composer.lock
 │   ├── phpunit.xml                    # テスト用設定 (SQLite in-memory)
@@ -139,19 +153,23 @@ task-matrix/
 │   │   │   ├── Controllers/
 │   │   │   │   ├── Controller.php     # ベースコントローラー
 │   │   │   │   └── Api/
+│   │   │   │       ├── AiController.php      # AI トリアージ / 分解 / コーチング API
 │   │   │   │       ├── ProjectController.php # プロジェクト CRUD & KPI サマリー
 │   │   │   │       └── TaskController.php    # タスク CRUD & チーム取り込み API
 │   │   │   ├── Requests/
 │   │   │   │   └── TaskRequest.php    # バリデーション FormRequest
 │   │   │   └── Resources/
 │   │   │       └── TaskResource.php   # JST 日時整形 Resource
-│   │   └── Models/
-│   │       ├── Project.php            # プロジェクトモデル (tasks リレーション)
-│   │       └── Task.php               # タスクモデル (teamTask & project リレーション)
+│   │   ├── Models/
+│   │   │   ├── Project.php            # プロジェクトモデル (tasks リレーション)
+│   │   │   └── Task.php               # タスクモデル (teamTask & project リレーション)
+│   │   └── Services/
+│   │       └── AiService.php          # Gemini API 呼び出し & スマートモック生成
 │   ├── bootstrap/
 │   │   ├── app.php                    # Laravel 11 ルーティング・ミドルウェア
 │   │   └── providers.php
 │   ├── config/
+│   │   ├── ai.php                     # AI プロバイダー & モデル設定
 │   │   ├── app.php                    # タイムゾーン (Asia/Tokyo) 設定
 │   │   └── cors.php                   # localhost:3000 許可設定
 │   ├── database/migrations/
@@ -159,28 +177,32 @@ task-matrix/
 │   │   ├── 2024_01_01_000002_add_team_and_methodology_to_tasks_table.php
 │   │   └── 2024_01_01_000003_create_projects_table.php # projects & project_id
 │   ├── routes/
-│   │   ├── api.php                    # /api/projects & /api/tasks ルート定義
+│   │   ├── api.php                    # /api/ai/*, /api/projects, /api/tasks
 │   │   ├── web.php
 │   │   └── console.php
 │   └── tests/
 │       ├── TestCase.php
 │       └── Feature/
-│           └── TaskApiTest.php        # API Feature テスト (8テスト)
+│           ├── AiTest.php             # AI API Feature テスト (4テスト・52アサーション)
+│           └── TaskApiTest.php        # タスク API Feature テスト (8テスト)
 └── frontend/                          # Nuxt 3 フロントエンド
     ├── app.vue
     ├── nuxt.config.ts                 # Tailwind CSS, runtimeConfig 設定
     ├── package.json / package-lock.json
     ├── vitest.config.ts               # Vitest 単体テスト設定
     ├── types/
+    │   ├── ai.ts                      # AI 型定義 (Triage, Breakdown, Coach)
     │   ├── project.ts                 # プロジェクト型定義 (Project, ProjectSummary)
     │   └── task.ts                    # タスク型定義 (Task, Scope, Methodology 等)
     ├── composables/
+    │   ├── useAi.ts                   # AI 通信・状態管理 Composable
     │   ├── useProjects.ts             # プロジェクト CRUD・状態管理・KPI
     │   └── useTasks.ts                # タスク通信・手法グルーピング・状態管理
     ├── pages/
     │   └── index.vue                  # 全体 ➔ プロジェクト ➔ チーム ➔ 個人4象限 UI
     └── tests/
         └── composables/
+            ├── useAi.spec.ts          # AI 機能 単体テスト (4テスト)
             ├── useProjects.spec.ts    # プロジェクト管理 単体テスト (4テスト)
             └── useTasks.spec.ts       # タスク管理 単体テスト (5テスト)
 ```
@@ -235,7 +257,31 @@ npm run dev
 
 ---
 
+### 3. AI 機能のセットアップ (任意: Google Gemini API)
+
+本アプリは **API キー未設定時でも自動的に高機能スマートモック推論（キーワード・期日解析ロジック）が稼働する** ため、事前のキー登録なしでもすべての AI 機能（トリアージ、タスク自動分解、生産性コーチング）をお試しいただけます。
+
+実際の最先端 LLM（Google Gemini 3.5 Flash）による文脈理解推論を利用する場合は、以下の手順で API キーを設定します：
+
+1. [Google AI Studio](https://aistudio.google.com/) で Gemini API キーを発行します。
+2. `backend/.env` に取得したキーを設定します：
+   ```env
+   AI_PROVIDER=gemini
+   GEMINI_API_KEY=your_gemini_api_key_here
+   GEMINI_MODEL=gemini-3.5-flash
+   ```
+3. 設定完了後、UI 上で「AI トリアージ」や「AI 自動分解」を実行すると、結果モーダルに **`● Gemini AI`** バッジ（緑色）が表示され、リアルタイム LLM 推論が機能していることを確認できます（未設定時は **`● AI Mock (Offline)`** バッジが表示されます）。
+
+---
+
 ## 📡 RESTful API 仕様
+
+### AI インテリジェンス API
+| メソッド | エンドポイント | 説明 | パラメータ / ボディ |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/ai/triage` | **AI 優先度判定 (トリアージ)** | `{ title, description?, due_date?, scope? }`<br>➔ 象限, 緊急度(1-5), 重要度(1-5), 目安時間, 根拠, アドバイス |
+| `POST` | `/api/ai/breakdown` | **AI タスク自動細分化** | `{ title, description?, methodology? }`<br>➔ サブタスク一覧（タイトル, 象限, 目安時間, 解説） |
+| `GET` | `/api/ai/coach` | **AI 生産性コーチング** | `?project_id=...&task_scope=personal/team`<br>➔ 健全度スコア(100点), 分析インサイト, 推奨アクション |
 
 ### プロジェクト API
 | メソッド | エンドポイント | 説明 | パラメータ / ボディ |
@@ -265,7 +311,7 @@ npm run dev
 ```bash
 docker-compose exec app php artisan test
 ```
-- プロジェクトおよびタスクの全件取得、象限フィルター、完了フラグ絞込、CRUD 処理、バリデーションエラー等の 8 テスト・47 アサーションがすべて自動実行されます。
+- AI トリアージ、タスク自動分解、AI コーチング、プロジェクト＆タスク CRUD、象限フィルター、バリデーションエラー等の **全 12 テスト・104 アサーションがすべて自動実行され、PASS します。**
 
 ### 2. フロントエンド単体テスト (Nuxt 3 / Vitest)
 ```bash
@@ -276,9 +322,10 @@ npm run test
 cd frontend
 npm run test
 ```
+- AI 機能（優先度判定、タスク自動分解、コーチング取得、バリデーション）の 4 テスト
 - プロジェクト管理（一覧取得、新規作成、削除、選択切り替え）の 4 テスト
 - タスク管理（チーム/個人のタスク分離、アジャイルカンバン列分類、ウォーターフォールフェーズ分類、個人タスクへの取り込み）の 5 テスト
-- **合計 9 テストがすべて自動実行され、PASS します。**
+- **合計 13 テストがすべて自動実行され、PASS します。**
 
 ---
 

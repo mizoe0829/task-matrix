@@ -49,6 +49,16 @@
             </select>
           </div>
 
+          <!-- AI Coach Button -->
+          <button
+            @click="openCoachModal()"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-purple-500/20 to-indigo-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30 hover:text-white transition shadow-sm"
+            title="AI生産性コーチングを開く"
+          >
+            <span class="animate-pulse">✨</span>
+            <span>AIコーチ</span>
+          </button>
+
           <button
             @click="refreshAll()"
             :disabled="isLoading"
@@ -1256,6 +1266,64 @@
             </div>
           </div>
 
+          <!-- AI Smart Breakdown Toggle / Trigger -->
+          <div class="p-3 bg-purple-950/30 border border-purple-500/30 rounded-xl space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+                <span>⚡ AIタスク自動分解</span>
+                <span class="text-[10px] text-purple-400 font-normal">(Smart Breakdown)</span>
+              </span>
+              <button
+                type="button"
+                @click="runAiBreakdownForBranch"
+                :disabled="isBreakingDown"
+                class="px-2.5 py-1 rounded-md text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white transition disabled:opacity-50 flex items-center gap-1"
+              >
+                <span v-if="isBreakingDown" class="animate-spin text-[10px]">🌀</span>
+                <span v-else>✨</span>
+                <span>サブタスクに分解</span>
+              </button>
+            </div>
+
+            <div v-if="breakdownResult" class="space-y-2 mt-2 pt-2 border-t border-purple-500/20">
+              <p class="text-[11px] text-purple-200">{{ breakdownResult.breakdown_summary }}</p>
+              <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                <div
+                  v-for="(sub, idx) in breakdownResult.subtasks"
+                  :key="idx"
+                  class="p-2 rounded-lg bg-slate-900 border border-slate-800 text-xs flex items-start justify-between gap-2"
+                >
+                  <div>
+                    <div class="font-semibold text-white">{{ sub.title }}</div>
+                    <div class="text-[11px] text-slate-400">{{ sub.description }}</div>
+                  </div>
+                  <div class="shrink-0 text-right">
+                    <span
+                      class="px-1.5 py-0.5 rounded text-[10px] font-bold"
+                      :class="{
+                        'bg-rose-500/20 text-rose-300 border border-rose-500/30': sub.priority_type === 'urgent_important',
+                        'bg-sky-500/20 text-sky-300 border border-sky-500/30': sub.priority_type === 'not_urgent_important',
+                        'bg-amber-500/20 text-amber-300 border border-amber-500/30': sub.priority_type === 'urgent_not_important',
+                        'bg-slate-700 text-slate-300': sub.priority_type === 'not_urgent_not_important',
+                      }"
+                    >
+                      {{ sub.priority_label || (sub.priority_type === 'urgent_important' ? 'DO' : (sub.priority_type === 'not_urgent_important' ? 'PLAN' : (sub.priority_type === 'urgent_not_important' ? 'DELEGATE' : 'ELIMINATE'))) }}
+                    </span>
+                    <div class="text-[10px] text-slate-400 mt-0.5">約{{ sub.estimated_minutes }}分</div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                @click="importBreakdownSubtasks"
+                class="w-full mt-2 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-lg transition"
+              >
+                🚀 分解された {{ breakdownResult.subtasks.length }} 件のサブタスクを一括取り込み
+              </button>
+            </div>
+          </div>
+
           <div>
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">配置する4象限 *</label>
             <div class="grid grid-cols-2 gap-2">
@@ -1451,14 +1519,66 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">タイトル *</label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">タイトル *</label>
+              <button
+                type="button"
+                @click="runAiTriageForCreate"
+                :disabled="!createTaskForm.title || isTriaging"
+                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-gradient-to-r from-purple-600/30 to-indigo-600/30 text-purple-200 border border-purple-500/40 hover:bg-purple-600/50 transition disabled:opacity-40"
+              >
+                <span v-if="isTriaging" class="animate-spin text-[10px]">🌀</span>
+                <span v-else>✨</span>
+                <span>AIトリアージ (優先度判定)</span>
+              </button>
+            </div>
             <input
               v-model="createTaskForm.title"
               type="text"
               required
-              placeholder="タスクのタイトル"
+              placeholder="タスクのタイトル (例: 本番DB接続障害の緊急対応)"
               class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
+          </div>
+
+          <!-- AI Triage Result Card for Create -->
+          <div
+            v-if="triageResult"
+            class="p-3.5 rounded-xl border border-purple-500/40 bg-gradient-to-br from-purple-950/40 via-slate-900 to-indigo-950/40 text-xs space-y-2 animate-in fade-in"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-purple-300 flex items-center gap-1">
+                  <span>🧠 AIトリアージ判定:</span>
+                </span>
+                <span
+                  class="px-2 py-0.5 rounded font-black text-xs shadow"
+                  :class="{
+                    'bg-rose-500 text-white': triageResult.priority_label === 'DO',
+                    'bg-sky-500 text-white': triageResult.priority_label === 'PLAN',
+                    'bg-amber-500 text-slate-900': triageResult.priority_label === 'DELEGATE',
+                    'bg-slate-600 text-slate-200': triageResult.priority_label === 'ELIMINATE',
+                  }"
+                >
+                  第{{ triageResult.priority_label === 'DO' ? '1' : (triageResult.priority_label === 'PLAN' ? '2' : (triageResult.priority_label === 'DELEGATE' ? '3' : '4')) }}象限 ({{ triageResult.priority_label }})
+                </span>
+              </div>
+              <span class="text-[11px] text-slate-400 font-mono">
+                想定: 約{{ triageResult.estimated_minutes }}分
+              </span>
+            </div>
+
+            <div class="flex items-center gap-4 text-[11px] text-slate-300 py-1 border-y border-slate-800/80">
+              <div>緊急度: <span class="font-bold text-amber-400">{{ '★'.repeat(triageResult.urgency_score) }}{{ '☆'.repeat(5 - triageResult.urgency_score) }}</span></div>
+              <div>重要度: <span class="font-bold text-indigo-400">{{ '★'.repeat(triageResult.importance_score) }}{{ '☆'.repeat(5 - triageResult.importance_score) }}</span></div>
+              <span v-if="triageResult.is_mock" class="text-[10px] text-slate-500 ml-auto">(モック推論)</span>
+              <span v-else class="text-[10px] text-emerald-400 ml-auto">● Gemini AI</span>
+            </div>
+
+            <p class="text-slate-300 leading-relaxed">{{ triageResult.reason }}</p>
+            <div class="text-purple-200 bg-purple-900/30 p-2 rounded-lg border border-purple-500/20">
+              💡 <strong>推奨アクション:</strong> {{ triageResult.action_advice }}
+            </div>
           </div>
 
           <div>
@@ -1525,13 +1645,65 @@
 
         <form @submit.prevent="submitUpdateTask" class="p-6 space-y-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">タイトル *</label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">タイトル *</label>
+              <button
+                type="button"
+                @click="runAiTriageForEdit"
+                :disabled="!editTaskForm.title || isTriaging"
+                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-gradient-to-r from-purple-600/30 to-indigo-600/30 text-purple-200 border border-purple-500/40 hover:bg-purple-600/50 transition disabled:opacity-40"
+              >
+                <span v-if="isTriaging" class="animate-spin text-[10px]">🌀</span>
+                <span v-else>✨</span>
+                <span>AIトリアージ (再判定)</span>
+              </button>
+            </div>
             <input
               v-model="editTaskForm.title"
               type="text"
               required
               class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
+          </div>
+
+          <!-- AI Triage Result Card for Edit -->
+          <div
+            v-if="triageResult"
+            class="p-3.5 rounded-xl border border-purple-500/40 bg-gradient-to-br from-purple-950/40 via-slate-900 to-indigo-950/40 text-xs space-y-2 animate-in fade-in"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-purple-300 flex items-center gap-1">
+                  <span>🧠 AIトリアージ判定:</span>
+                </span>
+                <span
+                  class="px-2 py-0.5 rounded font-black text-xs shadow"
+                  :class="{
+                    'bg-rose-500 text-white': triageResult.priority_label === 'DO',
+                    'bg-sky-500 text-white': triageResult.priority_label === 'PLAN',
+                    'bg-amber-500 text-slate-900': triageResult.priority_label === 'DELEGATE',
+                    'bg-slate-600 text-slate-200': triageResult.priority_label === 'ELIMINATE',
+                  }"
+                >
+                  第{{ triageResult.priority_label === 'DO' ? '1' : (triageResult.priority_label === 'PLAN' ? '2' : (triageResult.priority_label === 'DELEGATE' ? '3' : '4')) }}象限 ({{ triageResult.priority_label }})
+                </span>
+              </div>
+              <span class="text-[11px] text-slate-400 font-mono">
+                想定: 約{{ triageResult.estimated_minutes }}分
+              </span>
+            </div>
+
+            <div class="flex items-center gap-4 text-[11px] text-slate-300 py-1 border-y border-slate-800/80">
+              <div>緊急度: <span class="font-bold text-amber-400">{{ '★'.repeat(triageResult.urgency_score) }}{{ '☆'.repeat(5 - triageResult.urgency_score) }}</span></div>
+              <div>重要度: <span class="font-bold text-indigo-400">{{ '★'.repeat(triageResult.importance_score) }}{{ '☆'.repeat(5 - triageResult.importance_score) }}</span></div>
+              <span v-if="triageResult.is_mock" class="text-[10px] text-slate-500 ml-auto">(モック推論)</span>
+              <span v-else class="text-[10px] text-emerald-400 ml-auto">● Gemini AI</span>
+            </div>
+
+            <p class="text-slate-300 leading-relaxed">{{ triageResult.reason }}</p>
+            <div class="text-purple-200 bg-purple-900/30 p-2 rounded-lg border border-purple-500/20">
+              💡 <strong>推奨アクション:</strong> {{ triageResult.action_advice }}
+            </div>
           </div>
 
           <div>
@@ -1626,6 +1798,122 @@
         </form>
       </div>
     </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL E: AI 生産性コーチング モーダル                     -->
+    <!-- ======================================================== -->
+    <div
+      v-if="isCoachModalOpen"
+      class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
+    >
+      <div class="bg-slate-900 border border-purple-500/40 rounded-2xl w-full max-w-lg shadow-2xl shadow-purple-950/50 overflow-hidden">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-slate-800 bg-gradient-to-r from-purple-950/60 to-slate-900 flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🧠</span>
+            <div>
+              <h3 class="font-bold text-white text-base flex items-center gap-2">
+                AI 生産性コーチング
+                <span class="text-[10px] font-normal px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  アイゼンハワー分析
+                </span>
+              </h3>
+              <p class="text-xs text-slate-400">タスク配分比率と第2象限（重要・非緊急）フォーカス診断</p>
+            </div>
+          </div>
+          <button @click="isCoachModalOpen = false" class="text-slate-400 hover:text-white">✕</button>
+        </div>
+
+        <div class="p-6 space-y-5">
+          <!-- Loading state -->
+          <div v-if="isCoaching" class="py-12 text-center space-y-3">
+            <div class="w-10 h-10 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto"></div>
+            <p class="text-xs text-purple-300">タスクの象限バランスを分析中...</p>
+          </div>
+
+          <div v-else-if="coachResult" class="space-y-4">
+            <!-- Health Score Card -->
+            <div class="p-4 rounded-xl bg-gradient-to-br from-purple-950/40 to-slate-950 border border-purple-500/30 flex items-center justify-between">
+              <div>
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-purple-300">マトリクス健全度スコア</div>
+                <div class="text-2xl font-black text-white mt-0.5 flex items-baseline gap-1">
+                  <span>{{ coachResult.quadrant_health_score }}</span>
+                  <span class="text-xs text-slate-400 font-normal">/ 100 pt</span>
+                </div>
+                <div class="text-xs font-bold text-purple-200 mt-1">{{ coachResult.headline }}</div>
+              </div>
+              <div class="w-16 h-16 rounded-full bg-purple-500/10 border-2 border-purple-500 flex items-center justify-center text-xl shadow-lg shadow-purple-500/20">
+                <span v-if="coachResult.quadrant_health_score >= 80">🌟</span>
+                <span v-else-if="coachResult.quadrant_health_score >= 60">⚡</span>
+                <span v-else>⚠️</span>
+              </div>
+            </div>
+
+            <!-- Quadrant Distribution Mini Bar -->
+            <div v-if="coachResult.stats" class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5">
+              <div class="flex justify-between text-[11px] text-slate-400">
+                <span>象限バランス (総数: {{ coachResult.stats.total }}件)</span>
+                <span>第2象限: {{ coachResult.stats.plan }}件</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-slate-800 flex overflow-hidden">
+                <div
+                  :style="{ width: `${coachResult.stats.total ? (coachResult.stats.do / coachResult.stats.total) * 100 : 0}%` }"
+                  class="bg-rose-500"
+                  title="第1象限 (DO)"
+                ></div>
+                <div
+                  :style="{ width: `${coachResult.stats.total ? (coachResult.stats.plan / coachResult.stats.total) * 100 : 0}%` }"
+                  class="bg-sky-500"
+                  title="第2象限 (PLAN)"
+                ></div>
+                <div
+                  :style="{ width: `${coachResult.stats.total ? (coachResult.stats.delegate / coachResult.stats.total) * 100 : 0}%` }"
+                  class="bg-amber-500"
+                  title="第3象限 (DELEGATE)"
+                ></div>
+                <div
+                  :style="{ width: `${coachResult.stats.total ? (coachResult.stats.eliminate / coachResult.stats.total) * 100 : 0}%` }"
+                  class="bg-slate-500"
+                  title="第4象限 (ELIMINATE)"
+                ></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-400 pt-1">
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500"></span>第1: {{ coachResult.stats.do }}</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-sky-500"></span>第2: {{ coachResult.stats.plan }}</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span>第3: {{ coachResult.stats.delegate }}</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-500"></span>第4: {{ coachResult.stats.eliminate }}</span>
+              </div>
+            </div>
+
+            <!-- Insights -->
+            <div class="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/80 text-xs text-slate-300 space-y-1">
+              <div class="font-bold text-slate-200 flex items-center gap-1">
+                <span>🔍 分析インサイト</span>
+              </div>
+              <p class="leading-relaxed">{{ coachResult.insights }}</p>
+            </div>
+
+            <!-- Recommended Action -->
+            <div class="p-3.5 rounded-xl bg-purple-900/30 border border-purple-500/30 text-xs text-purple-200 space-y-1">
+              <div class="font-bold text-purple-300 flex items-center gap-1">
+                <span>💡 推奨アクション</span>
+              </div>
+              <p class="leading-relaxed">{{ coachResult.recommended_action }}</p>
+            </div>
+          </div>
+
+          <div class="pt-2 flex justify-end border-t border-slate-800">
+            <button
+              type="button"
+              @click="isCoachModalOpen = false"
+              class="px-5 py-2 rounded-lg text-sm font-semibold bg-slate-800 hover:bg-slate-700 text-white transition"
+            >
+              閉じる
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -1633,6 +1921,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useTasks } from '~/composables/useTasks';
 import { useProjects } from '~/composables/useProjects';
+import { useAi } from '~/composables/useAi';
 import type { PriorityType, TaskScope, Methodology, WaterfallPhase, Task } from '~/types/task';
 import type { Project } from '~/types/project';
 
@@ -1670,6 +1959,20 @@ const {
   deleteProject,
   selectProject,
 } = useProjects();
+
+const {
+  isTriaging,
+  isBreakingDown,
+  isCoaching,
+  triageResult,
+  breakdownResult,
+  coachResult,
+  fetchTriage,
+  fetchBreakdown,
+  fetchCoach,
+  clearTriage,
+  clearBreakdown,
+} = useAi();
 
 // --- Navigation View State ---
 // 'global' (全体ダッシュボード) | 'project' (プロジェクト詳細) | 'team' (チームタスク) | 'personal' (個人4象限)
@@ -1878,6 +2181,8 @@ const branchForm = ref<{
 });
 
 const openBranchModal = (teamTask: Task) => {
+  clearBreakdown();
+  clearTriage();
   targetTeamTask.value = teamTask;
   branchForm.value = {
     priority_type: teamTask.priority_type || 'urgent_important',
@@ -1933,6 +2238,7 @@ const createTaskForm = ref<{
 });
 
 const openCreateModal = (defaults: Partial<typeof createTaskForm.value> = {}) => {
+  clearTriage();
   createTaskForm.value = {
     project_id: defaults.project_id ?? (currentProject.value?.id || null),
     task_scope: defaults.task_scope || (currentView.value === 'personal' ? 'personal' : 'team'),
@@ -1996,6 +2302,7 @@ const editTaskForm = ref<{
 });
 
 const openEditModal = (task: Task) => {
+  clearTriage();
   editingTaskId.value = task.id;
   editTaskForm.value = {
     methodology: task.methodology,
@@ -2039,6 +2346,70 @@ const deleteCurrentEditingTask = async () => {
 const handleQuadrantChange = (task: Task, event: Event) => {
   const target = event.target as HTMLSelectElement;
   changeQuadrant(task, target.value as PriorityType);
+};
+
+// --- AI アクション ---
+const isCoachModalOpen = ref(false);
+
+const openCoachModal = async () => {
+  isCoachModalOpen.value = true;
+  await fetchCoach(currentProject.value?.id || null, currentView.value === 'personal' ? 'personal' : 'team');
+};
+
+const runAiTriageForCreate = async () => {
+  if (!createTaskForm.value.title) return;
+  const res = await fetchTriage(
+    createTaskForm.value.title,
+    createTaskForm.value.description,
+    toJstFormattedString(createTaskForm.value.due_date) || undefined,
+    createTaskForm.value.task_scope
+  );
+  if (res) {
+    createTaskForm.value.priority_type = res.priority_type;
+  }
+};
+
+const runAiTriageForEdit = async () => {
+  if (!editTaskForm.value.title) return;
+  const res = await fetchTriage(
+    editTaskForm.value.title,
+    editTaskForm.value.description,
+    toJstFormattedString(editTaskForm.value.due_date) || undefined,
+    'personal'
+  );
+  if (res) {
+    editTaskForm.value.priority_type = res.priority_type;
+  }
+};
+
+const runAiBreakdownForBranch = async () => {
+  if (!targetTeamTask.value) return;
+  await fetchBreakdown(
+    targetTeamTask.value.title,
+    targetTeamTask.value.description || undefined,
+    targetTeamTask.value.methodology
+  );
+};
+
+const importBreakdownSubtasks = async () => {
+  if (!breakdownResult.value || !targetTeamTask.value) return;
+  for (const sub of breakdownResult.value.subtasks) {
+    await createTask({
+      project_id: targetTeamTask.value.project_id,
+      task_scope: 'personal',
+      methodology: 'matrix',
+      team_task_id: targetTeamTask.value.id,
+      title: sub.title,
+      description: sub.description,
+      priority_type: sub.priority_type,
+      due_date: toJstFormattedString(branchForm.value.due_date),
+    });
+  }
+  clearBreakdown();
+  isBranchModalOpen.value = false;
+  currentView.value = 'personal';
+  await fetchTasks();
+  await fetchProjects();
 };
 
 onMounted(() => {
