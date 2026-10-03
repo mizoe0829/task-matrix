@@ -1264,6 +1264,8 @@
             <div v-else-if="targetTeamTask.waterfall_phase" class="text-cyan-400 text-[11px]">
               工程: {{ getPhaseLabel(targetTeamTask.waterfall_phase) }}
             </div>
+          </div>
+
           <!-- AI Smart Breakdown Toggle / Trigger -->
           <div class="p-3 bg-purple-950/30 border border-purple-500/30 rounded-xl space-y-2">
             <div class="flex items-center justify-between">
