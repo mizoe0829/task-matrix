@@ -1138,10 +1138,10 @@
     <!-- ======================================================== -->
     <div
       v-if="isCreateProjectModalOpen"
-      class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+      class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
     >
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div class="px-6 py-4 border-b border-slate-800 bg-gradient-to-r from-indigo-950/60 to-slate-900 flex justify-between items-center">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto animate-in fade-in zoom-in duration-200">
+        <div class="px-6 py-4 border-b border-slate-800 bg-gradient-to-r from-indigo-950/60 to-slate-900 flex justify-between items-center shrink-0">
           <div class="flex items-center gap-2">
             <span class="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">📂</span>
             <h3 class="font-bold text-white text-base">新規プロジェクト作成</h3>
@@ -1149,7 +1149,7 @@
           <button @click="isCreateProjectModalOpen = false" class="text-slate-400 hover:text-white">✕</button>
         </div>
 
-        <form @submit.prevent="submitCreateProject" class="p-6 space-y-4">
+        <form @submit.prevent="submitCreateProject" class="p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
           <div>
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">プロジェクト名 *</label>
             <input
@@ -1240,10 +1240,10 @@
     <!-- ======================================================== -->
     <div
       v-if="isBranchModalOpen && targetTeamTask"
-      class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+      class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
     >
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div class="px-6 py-4 border-b border-slate-800 bg-gradient-to-r from-indigo-950/60 to-slate-900 flex justify-between items-center">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto animate-in fade-in zoom-in duration-200">
+        <div class="px-6 py-4 border-b border-slate-800 bg-gradient-to-r from-indigo-950/60 to-slate-900 flex justify-between items-center shrink-0">
           <div class="flex items-center gap-2.5">
             <span class="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">⚡</span>
             <div>
@@ -1254,7 +1254,7 @@
           <button @click="isBranchModalOpen = false" class="text-slate-400 hover:text-white">✕</button>
         </div>
 
-        <form @submit.prevent="submitBranchToPersonal" class="p-6 space-y-4">
+        <form @submit.prevent="submitBranchToPersonal" class="p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
           <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1">
             <span class="text-slate-400">元のチームタスク:</span>
             <div class="font-bold text-white text-sm">{{ targetTeamTask.title }}</div>
@@ -1409,15 +1409,15 @@
     <!-- ======================================================== -->
     <div
       v-if="isCreateModalOpen"
-      class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+      class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
     >
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-800/50">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto animate-in fade-in zoom-in duration-200">
+        <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-800/50 shrink-0">
           <h3 class="font-bold text-white text-base">新規タスク追加</h3>
           <button @click="isCreateModalOpen = false" class="text-slate-400 hover:text-white">✕</button>
         </div>
 
-        <form @submit.prevent="submitCreateTask" class="p-6 space-y-4">
+        <form @submit.prevent="submitCreateTask" class="p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
           <!-- Project selection -->
           <div>
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">所属プロジェクト</label>
@@ -1635,15 +1635,15 @@
     <!-- ======================================================== -->
     <div
       v-if="isEditModalOpen"
-      class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+      class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
     >
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-800/50">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto animate-in fade-in zoom-in duration-200">
+        <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-800/50 shrink-0">
           <h3 class="font-bold text-white text-base">タスク内容の編集</h3>
           <button @click="isEditModalOpen = false" class="text-slate-400 hover:text-white">✕</button>
         </div>
 
-        <form @submit.prevent="submitUpdateTask" class="p-6 space-y-4">
+        <form @submit.prevent="submitUpdateTask" class="p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">タイトル *</label>
@@ -1804,11 +1804,11 @@
     <!-- ======================================================== -->
     <div
       v-if="isCoachModalOpen"
-      class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
+      class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in"
     >
-      <div class="bg-slate-900 border border-purple-500/40 rounded-2xl w-full max-w-lg shadow-2xl shadow-purple-950/50 overflow-hidden">
+      <div class="bg-slate-900 border border-purple-500/40 rounded-2xl w-full max-w-lg shadow-2xl shadow-purple-950/50 overflow-hidden flex flex-col max-h-[90vh] my-auto">
         <!-- Header -->
-        <div class="px-6 py-4 border-b border-slate-800 bg-gradient-to-r from-purple-950/60 to-slate-900 flex justify-between items-center">
+        <div class="px-6 py-4 border-b border-slate-800 bg-gradient-to-r from-purple-950/60 to-slate-900 flex justify-between items-center shrink-0">
           <div class="flex items-center gap-2">
             <span class="text-xl">🧠</span>
             <div>
@@ -1824,7 +1824,7 @@
           <button @click="isCoachModalOpen = false" class="text-slate-400 hover:text-white">✕</button>
         </div>
 
-        <div class="p-6 space-y-5">
+        <div class="p-6 space-y-5 overflow-y-auto flex-1 min-h-0">
           <!-- Loading state -->
           <div v-if="isCoaching" class="py-12 text-center space-y-3">
             <div class="w-10 h-10 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto"></div>
@@ -2416,3 +2416,21 @@ onMounted(() => {
   refreshAll();
 });
 </script>
+
+<style scoped>
+/* スタイリッシュなダークスクロールバー */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.45);
+}
+</style>
