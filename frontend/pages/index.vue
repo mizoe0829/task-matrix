@@ -1572,7 +1572,7 @@
               <div>緊急度: <span class="font-bold text-amber-400">{{ '★'.repeat(triageResult.urgency_score) }}{{ '☆'.repeat(5 - triageResult.urgency_score) }}</span></div>
               <div>重要度: <span class="font-bold text-indigo-400">{{ '★'.repeat(triageResult.importance_score) }}{{ '☆'.repeat(5 - triageResult.importance_score) }}</span></div>
               <span v-if="triageResult.is_mock" class="text-[10px] text-slate-500 ml-auto">(モック推論)</span>
-              <span v-else class="text-[10px] text-emerald-400 ml-auto">● Gemini 1.5</span>
+              <span v-else class="text-[10px] text-emerald-400 ml-auto">● Gemini AI</span>
             </div>
 
             <p class="text-slate-300 leading-relaxed">{{ triageResult.reason }}</p>
@@ -1697,7 +1697,7 @@
               <div>緊急度: <span class="font-bold text-amber-400">{{ '★'.repeat(triageResult.urgency_score) }}{{ '☆'.repeat(5 - triageResult.urgency_score) }}</span></div>
               <div>重要度: <span class="font-bold text-indigo-400">{{ '★'.repeat(triageResult.importance_score) }}{{ '☆'.repeat(5 - triageResult.importance_score) }}</span></div>
               <span v-if="triageResult.is_mock" class="text-[10px] text-slate-500 ml-auto">(モック推論)</span>
-              <span v-else class="text-[10px] text-emerald-400 ml-auto">● Gemini 1.5</span>
+              <span v-else class="text-[10px] text-emerald-400 ml-auto">● Gemini AI</span>
             </div>
 
             <p class="text-slate-300 leading-relaxed">{{ triageResult.reason }}</p>
