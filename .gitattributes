@@ -1,7 +1,0 @@
-# ==============================================================================
-# GitHub Linguist Overrides
-# Prioritize PHP (Laravel backend) as the primary language in GitHub statistics
-# ==============================================================================
-
-# Mark frontend directory as vendored so that PHP is recognized as primary language
-frontend/** linguist-vendored
