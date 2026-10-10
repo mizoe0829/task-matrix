@@ -14,7 +14,7 @@
 | **スタイリング** | **Tailwind CSS** | ダークモード基調のモダン UI（ダッシュボード / カンバン / WBS / 2×2マトリクス / AIポップアップ） |
 | **フロントエンドテスト** | **Vitest** + **@vue/test-utils** | Composable 単体テスト・状態管理テスト（全13テストPASS） |
 | **バックエンド API** | **Laravel 11** | PHP 8.3, RESTful API, Eloquent ORM |
-| **AI / LLM 統合** | **Google Gemini API** | `gemini-3.5-flash` / Structured Outputs (JSON Schema) / インテリジェント・スマートモック内蔵 |
+| **AI / LLM 統合** | **Google Gemini API** | `gemini-3.6-flash` / Structured Outputs (JSON Schema) / インテリジェント・スマートモック内蔵 |
 | **バックエンドテスト** | **PHPUnit** / **Pest** | API Feature テスト（全12テスト・104アサーションPASS） |
 | **Web サーバー** | **Nginx** | リバースプロキシ (`:8080` 公開) |
 | **データベース** | **MySQL 8.0** | データ永続化 (JST `+09:00` 設定済) |
@@ -261,14 +261,14 @@ npm run dev
 
 本アプリは **API キー未設定時でも自動的に高機能スマートモック推論（キーワード・期日解析ロジック）が稼働する** ため、事前のキー登録なしでもすべての AI 機能（トリアージ、タスク自動分解、生産性コーチング）をお試しいただけます。
 
-実際の最先端 LLM（Google Gemini 3.5 Flash）による文脈理解推論を利用する場合は、以下の手順で API キーを設定します：
+実際の最先端 LLM（Google Gemini 3.6 Flash）による文脈理解推論を利用する場合は、以下の手順で API キーを設定します：
 
 1. [Google AI Studio](https://aistudio.google.com/) で Gemini API キーを発行します。
 2. `backend/.env` に取得したキーを設定します：
    ```env
    AI_PROVIDER=gemini
    GEMINI_API_KEY=your_gemini_api_key_here
-   GEMINI_MODEL=gemini-3.5-flash
+   GEMINI_MODEL=gemini-3.6-flash
    ```
 3. 設定完了後、UI 上で「AI トリアージ」や「AI 自動分解」を実行すると、結果モーダルに **`● Gemini AI`** バッジ（緑色）が表示され、リアルタイム LLM 推論が機能していることを確認できます（未設定時は **`● AI Mock (Offline)`** バッジが表示されます）。
 

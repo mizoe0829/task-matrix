@@ -18,7 +18,7 @@ class AiService
     {
         $this->provider = config('ai.provider', 'gemini');
         $this->geminiApiKey = config('ai.gemini.api_key', '');
-        $this->geminiModel = config('ai.gemini.model', 'gemini-1.5-flash');
+        $this->geminiModel = config('ai.gemini.model', 'gemini-3.6-flash');
         $this->geminiApiUrl = config('ai.gemini.api_url', 'https://generativelanguage.googleapis.com/v1beta/models');
         $this->cacheTtl = config('ai.cache_ttl', 60);
     }
